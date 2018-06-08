@@ -20,6 +20,11 @@
 
 #include "support/path.h"
 
+#if defined(WIN32) || defined(_WIN32)
+#include <Shlwapi.h>
+#include <Windows.h>
+#endif
+
 namespace wasm {
 
 namespace Path {
@@ -31,6 +36,54 @@ std::string getPathSeparator() {
   return "\\";
 #else
   return "/";
+#endif
+}
+
+bool isAbsolutePath(std::string str) {
+  // TODO: use c++17's std::filesystem::path::is_absolute()
+  //       http://en.cppreference.com/w/cpp/filesystem/path/is_absrel
+#if defined(WIN32) || defined(_WIN32)
+#ifdef _UNICODE
+  int size = MultiByteToWideChar(CP_THREAD_ACP, 0, str.c_str(), -1, nullptr, 0);
+  WCHAR* wstr = new WCHAR[size];
+  MultiByteToWideChar(CP_THREAD_ACP, 0, str.c_str(), -1, wstr, size);
+  bool ret = !PathIsRelative(wstr);
+  delete[] wstr;
+  return ret;
+#else
+  return !PathIsRelative(str.c_str());
+#endif
+#else
+  std::string separator = getPathSeparator();
+  if (str.length() < separator.length())
+    return false;
+  if (str.substr(0, separator.length()) != separator)
+    return false;
+  return true;
+#endif
+}
+
+bool isRelativePath(std::string str) {
+  // TODO: use c++17's std::filesystem::path::is_relative()
+  //       http://en.cppreference.com/w/cpp/filesystem/path/is_absrel
+#if defined(WIN32) || defined(_WIN32)
+#ifdef _UNICODE
+  int size = MultiByteToWideChar(CP_THREAD_ACP, 0, str.c_str(), -1, nullptr, 0);
+  WCHAR* wstr = new WCHAR[size];
+  MultiByteToWideChar(CP_THREAD_ACP, 0, str.c_str(), -1, wstr, size);
+  bool ret = PathIsRelative(wstr);
+  delete[] wstr;
+  return ret;
+#else
+  return PathIsRelative(str.c_str());
+#endif
+#else
+  std::string separator = getPathSeparator();
+  if (str.length() < separator.length())
+    return true;
+  if (str.substr(0, separator.length()) != separator)
+    return true;
+  return false;
 #endif
 }
 

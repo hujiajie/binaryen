@@ -30,6 +30,12 @@ namespace Path {
 
 std::string getPathSeparator();
 
+// Check if the given string represents an absolute path.
+bool isAbsolutePath(std::string str);
+
+// Check if the given string represents a relative path.
+bool isRelativePath(std::string str);
+
 // Get the binaryen root dor.
 std::string getBinaryenRoot();
 

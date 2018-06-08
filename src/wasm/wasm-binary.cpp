@@ -18,6 +18,7 @@
 #include <fstream>
 
 #include "support/bits.h"
+#include "support/path.h"
 #include "wasm-binary.h"
 #include "ir/branch-utils.h"
 #include "ir/module-utils.h"
@@ -529,7 +530,13 @@ void WasmBinaryWriter::writeSourceMapProlog() {
   for (size_t i = 0; i < wasm->debugInfoFileNames.size(); i++) {
     if (i > 0) *sourceMap << ",";
     // TODO respect JSON string encoding, e.g. quotes and control chars.
-    *sourceMap << "\"" << wasm->debugInfoFileNames[i] << "\"";
+    *sourceMap << "\"";
+    if (Path::isAbsolutePath(wasm->debugInfoFileNames[i])) {
+      // Prevent absolute paths from being resolved relative to the source map.
+      *sourceMap << "file://";
+    }
+    *sourceMap << wasm->debugInfoFileNames[i];
+    *sourceMap << "\"";
   }
   *sourceMap << "],\"names\":[],\"mappings\":\"";
 }
