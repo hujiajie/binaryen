@@ -15,7 +15,7 @@
  */
 
 //
-// Command line helpers.
+// Path helpers.
 //
 
 #include "support/path.h"

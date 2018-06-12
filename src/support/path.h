@@ -15,7 +15,7 @@
  */
 
 //
-// Command line helpers.
+// Path helpers.
 //
 
 #ifndef wasm_support_path_h
@@ -36,7 +36,7 @@ bool isAbsolutePath(std::string str);
 // Check if the given string represents a relative path.
 bool isRelativePath(std::string str);
 
-// Get the binaryen root dor.
+// Get the binaryen root dir.
 std::string getBinaryenRoot();
 
 // Get the binaryen bin dir.
