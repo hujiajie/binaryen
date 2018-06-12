@@ -151,19 +151,21 @@ void SExpressionParser::parseDebugLocation() {
   while (debugLoc[0] && debugLoc[0] == ' ') debugLoc++;
   char* debugLocEnd = debugLoc;
   while (debugLocEnd[0] && debugLocEnd[0] != '\n') debugLocEnd++;
-  char* pos = debugLoc;
-  while (pos < debugLocEnd && pos[0] != ':') pos++;
-  if (pos >= debugLocEnd) {
-    return; // no line number
+  // Scan in reverse direction to avoid being fooled by ':' in Windows
+  // absolute paths
+  char* pos = debugLocEnd;
+  while (pos > debugLoc && pos[-1] != ':') pos--;
+  if (pos == debugLoc) {
+    return; // invalid because only one field is found
   }
-  std::string name(debugLoc, pos);
-  char* lineStart = ++pos;
-  while (pos < debugLocEnd && pos[0] != ':') pos++;
-  std::string lineStr(lineStart, pos);
-  if (pos >= debugLocEnd) {
-    return; // no column number
+  std::string colStr(pos, debugLocEnd);
+  char* lineEnd = pos--;
+  while (pos > debugLoc && pos[-1] != ':') pos--;
+  if (pos == debugLoc) {
+    return; // invalid because only two fields are found
   }
-  std::string colStr(++pos, debugLocEnd);
+  std::string lineStr(pos, lineEnd);
+  std::string name(debugLoc, --pos);
   void* buf = allocator.allocSpace(sizeof(SourceLocation));
   loc = new (buf) SourceLocation(IString(name.c_str(), false), atoi(lineStr.c_str()), atoi(colStr.c_str()));
 }
